@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift File.expand_path('../sort_of_a_lib', __dir__)
+require 'spec_helper'
 
 def self.assert_sorts(klass, in_place:)
   RSpec.describe klass do
