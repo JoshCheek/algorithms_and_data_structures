@@ -1,3 +1,5 @@
+require 'loop'
+
 # IDK if this is really a heap sort, I'm doing it a little from memory
 # and a little just going with what makes sense. Feels like a heapsort,
 # but I don't remember ever tracking which branch to push down before.
@@ -18,12 +20,11 @@ class HeapLinked
   end
 
   def pop_all
-    sorted = []
-    while @head
-      @head, data = pop(@head)
-      sorted << data
-    end
-    sorted
+    Loop.while { @head }
+        .map {
+          @head, data = pop @head
+          data
+        }
   end
 
   private
