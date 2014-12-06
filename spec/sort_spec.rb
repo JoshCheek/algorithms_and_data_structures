@@ -76,3 +76,6 @@ end
 
 require 'heap_linked'
 assert_sorts HeapLinked, in_place: false
+
+require 'binary_search_tree'
+assert_sorts BinarySearchTree, in_place: false
