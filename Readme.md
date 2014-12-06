@@ -1,12 +1,13 @@
-Sort Algorithms
-===============
+Algorithms and Data Structures
+==============================
 
-Sorting algorithms entered my brain again, and I want to play with them.
+Just a place to play with algorithms and data structures.
 
 **These are not authoratative!**
 
-They're made up from memory and "well this seems reasonable", I haven't looked
-at the definitions for most of these in several years, they're probably bullshit.
+They're all from my brain (memory or imagination),
+so if you're looking for something canonical, you should look
+elsewhere.
 
 
 LICENSE
