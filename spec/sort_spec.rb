@@ -1,7 +1,9 @@
 require 'spec_helper'
 
-def self.assert_sorts(klass, in_place:)
-  RSpec.describe klass do
+def self.assert_sorts(klass, pending:[], tag:, in_place:)
+  pending = Array pending
+
+  RSpec.describe klass, tag => true do
     define_method(:sort) { |ary, &comparer| klass.sort ary, &comparer }
 
     it 'sorts an empty list' do
@@ -42,6 +44,7 @@ def self.assert_sorts(klass, in_place:)
     end
 
     it 'accepts a block to use for comparison' do
+      pending() if pending.include? :block_comparison
       ary    = [*1..100].shuffle
       result = sort(ary.dup) { |l, r| -(l<=>r) }
       expect(result).to eq([*1..100].reverse),
@@ -75,7 +78,10 @@ end
 
 
 require 'heap_linked'
-assert_sorts HeapLinked, in_place: false
+assert_sorts HeapLinked, tag: :heap, in_place: false
 
 require 'binary_search_tree'
-assert_sorts BinarySearchTree, in_place: false
+assert_sorts BinarySearchTree, tag: :bst, in_place: false
+
+require 'run_based_merge_sort'
+assert_sorts RunBasedMergeSort, tag: :rbms, in_place: false, pending: :block_comparison
