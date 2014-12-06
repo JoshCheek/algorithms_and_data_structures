@@ -1,3 +1,6 @@
+# Another implementation that is more suited to a data structure
+# is at https://gist.github.com/JoshCheek/be9616d65989967bda9d
+# (this one's pretty custom to just what I need for the sort algo)
 class BinarySearchTree
   def self.sort(array, &comparer)
     comparer ||= :<=>.to_proc
