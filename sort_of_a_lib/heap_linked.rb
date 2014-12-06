@@ -35,36 +35,39 @@ class HeapLinked
 
   private
 
-  def left_is_less?(left, right)
-    @comparer.call(left, right) < 0
-  end
-
+  # for now, push down the path with the largest data
   def push(node, data)
-    data, node.data = node.data, data if left_is_less?(data, node.data)
+    return Node.new data unless node
 
-    if node.left && node.right
-      # for now, push down the path with the largest data
-      if left_is_less?(node.left.data, node.right.data)
-        push node.right, data
-      else
-        push node.left, data
-      end
-    elsif node.left
-      node.right = Node.new data
+    data = swap_current(node, data) if left_first?(data, node.data)
+
+    push_right = ( node.left  &&
+                   node.right &&
+                   left_first?(node.left.data, node.right.data)
+                 ) || (
+                   node.left && !node.right
+                 )
+
+    if push_right
+      node.right = push(node.right, data)
     else
-      node.left = Node.new data
+      node.left  = push(node.left, data)
     end
+
+    node
   end
 
   def pop(node)
     to_return = node.data
-    if node.left && node.right
-      if left_is_less?(node.left.data, node.right.data)
-        node.left, node.data = pop(node.left)
-      else
-        node.right, node.data = pop(node.right)
-      end
-    elsif node.left
+
+    pop_left = ( node.left  &&
+                 node.right &&
+                 left_first?(node.left.data, node.right.data)
+               ) || (
+                 node.left && !node.right
+               )
+
+    if pop_left
       node.left, node.data = pop(node.left)
     elsif node.right
       node.right, node.data = pop(node.right)
@@ -72,5 +75,15 @@ class HeapLinked
       node = nil
     end
     return node, to_return
+  end
+
+  def left_first?(left_data, right_data)
+    @comparer.call(left_data, right_data) < 0
+  end
+
+  def swap_current(node, data)
+    to_return = node.data
+    node.data = data
+    to_return
   end
 end
