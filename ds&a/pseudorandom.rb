@@ -3,6 +3,11 @@
 #
 # It described a pseudorandom algorithm that John von Neumann came up with
 # it seemed interesting and doable, so here we are
+#
+# -----
+#
+# There's also an algorithm at http://en.wikipedia.org/wiki/Mersenne_twister
+# which sounds kind of interesting. Apparently it's what Ruby uses.
 
 class Pseudorandom
   def initialize(seed)
