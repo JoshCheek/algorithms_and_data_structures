@@ -1,1 +1,1 @@
-$LOAD_PATH.unshift File.expand_path('../sort_of_a_lib', __dir__)
+$LOAD_PATH.unshift File.expand_path('../ds&a', __dir__)
