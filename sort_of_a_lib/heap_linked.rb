@@ -39,16 +39,9 @@ class HeapLinked
   def push(node, data)
     return Node.new data unless node
 
-    data = swap_current(node, data) if left_first?(data, node.data)
+    data = swap_current(node, data) if is_first?(data, node.data)
 
-    push_right = ( node.left  &&
-                   node.right &&
-                   left_first?(node.left.data, node.right.data)
-                 ) || (
-                   node.left && !node.right
-                 )
-
-    if push_right
+    if left_first?(node.left, node.right)
       node.right = push(node.right, data)
     else
       node.left  = push(node.left, data)
@@ -60,24 +53,18 @@ class HeapLinked
   def pop(node)
     to_return = node.data
 
-    pop_left = ( node.left  &&
-                 node.right &&
-                 left_first?(node.left.data, node.right.data)
-               ) || (
-                 node.left && !node.right
-               )
-
-    if pop_left
+    if left_first?(node.left, node.right)
       node.left, node.data = pop(node.left)
     elsif node.right
       node.right, node.data = pop(node.right)
     else
       node = nil
     end
+
     return node, to_return
   end
 
-  def left_first?(left_data, right_data)
+  def is_first?(left_data, right_data)
     @comparer.call(left_data, right_data) < 0
   end
 
@@ -85,5 +72,14 @@ class HeapLinked
     to_return = node.data
     node.data = data
     to_return
+  end
+
+  def left_first?(left_node, right_node)
+    ( left_node  &&
+      right_node &&
+      is_first?(left_node.data, right_node.data)
+    ) || (
+      left_node && !right_node
+    )
   end
 end
