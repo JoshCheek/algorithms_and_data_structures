@@ -3,25 +3,18 @@
 # but I don't remember ever tracking which branch to push down before.
 class HeapLinked
   def self.sort(ary, &comparer)
-    ary.each_with_object(new &(comparer || :<=>)) { |element, hs| hs.add element }.pop_all
+    comparer ||= :<=>
+    ary.each_with_object(new &comparer) { |el, heap| heap.add el }.pop_all
   end
 
-  Node = Struct.new :data, :left, :right do
-    def inspect
-      "(#{data.inspect} L#{left.inspect} R#{right.inspect})"
-    end
-  end
+  Node = Struct.new :data, :left, :right
 
   def initialize(&comparer)
     @comparer = comparer
   end
 
   def add(data)
-    if @head
-      push @head, data
-    else
-      @head = Node.new data
-    end
+    @head = push @head, data
   end
 
   def pop_all
@@ -35,11 +28,14 @@ class HeapLinked
 
   private
 
-  # for now, push down the path with the largest data
+  # For now, push down the path with the largest data
+  # Seems like if I gave each node a bit to identify which side to push down
+  # and then alternated it for each push, that it would cause the tree to be
+  # balanced, which should keep it as close to optimal time complexity as possible
   def push(node, data)
     return Node.new data unless node
 
-    data = swap_current(node, data) if is_first?(data, node.data)
+    data = replace_data(node, data) if is_first?(data, node.data)
 
     if left_first?(node.left, node.right)
       node.right = push(node.right, data)
@@ -68,18 +64,19 @@ class HeapLinked
     @comparer.call(left_data, right_data) < 0
   end
 
-  def swap_current(node, data)
-    to_return = node.data
+  # IDK if this is more communicative or less
+  # I like it better than tap
+  # and it takes no variable tracking, unlike either of the normal swaps (a, b.c = b.c, a) and (temp = b.c; b.c = a; temp)
+  # but it's atypical, and so could cause people to go "huh?"
+  def replace_data(node, data)
+    node.data
+  ensure
     node.data = data
-    to_return
   end
 
   def left_first?(left_node, right_node)
-    ( left_node  &&
-      right_node &&
-      is_first?(left_node.data, right_node.data)
-    ) || (
-      left_node && !right_node
-    )
+    return false unless left_node             # not first if it DNE
+    return true  unless right_node            # is first if it's the only node
+    is_first? left_node.data, right_node.data # compare to find out
   end
 end
