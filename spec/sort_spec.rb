@@ -1,8 +1,8 @@
 $LOAD_PATH.unshift File.expand_path('../sort_of_a_lib', __dir__)
 
-def self.assert_sorts(klass)
+def self.assert_sorts(klass, in_place:)
   RSpec.describe klass do
-    define_method(:sort) { |ary| klass.sort ary }
+    define_method(:sort) { |ary, &comparer| klass.sort ary, &comparer }
 
     it 'sorts an empty list' do
       expect(sort []).to eq []
@@ -25,10 +25,28 @@ def self.assert_sorts(klass)
       end
     end
 
-    it 'sorts a list with 10 elements'
-    it 'sorts a list with nonconsecutive elements'
-    it 'sorts a list with equivalent elements'
-    it 'takes a block to use for comparison'
+    it 'sorts a list with 10 elements' do
+      5.times do
+        ary    = [*1..10]
+        result = sort ary.dup
+        expect(result).to eq([*1..10]), "#{ary.inspect} sorted to #{result.inspect}"
+      end
+    end
+
+    it 'sorts a list with nonconsecutive elements' do
+      expect(sort [100, 5, 3, 19, 45]).to eq [3, 5, 19, 45, 100]
+    end
+
+    it 'sorts a list with equivalent elements' do
+      expect(sort [1,5,3,5,3,1]).to eq [1,1,3,3,5,5]
+    end
+
+    it 'accepts a block to use for comparison' do
+      ary    = [*1..100].shuffle
+      result = sort(ary.dup) { |l, r| -(l<=>r) }
+      expect(result).to eq([*1..100].reverse),
+        "reverse sorted #{ary.inspect}\n\nit came out as\n\n#{result.inspect}"
+    end
 
     it 'sorts any comparable type' do
       expect(sort %w(c a b)).to eq %w(a b c)
@@ -39,9 +57,22 @@ def self.assert_sorts(klass)
       expect(result).to eq [*1..100]
     end
 
+    if in_place
+      it 'sorts the list in-place' do
+        ary = [3,2,1]
+        sort ary
+        expect(ary).to eq [1,2,3]
+      end
+    else
+      it 'does not mutate the original array' do
+        ary = [3,2,1]
+        sort ary
+        expect(ary).to eq [3,2,1]
+      end
+    end
   end
 end
 
 
 require 'heap_linked'
-assert_sorts HeapLinked
+assert_sorts HeapLinked, in_place: false
