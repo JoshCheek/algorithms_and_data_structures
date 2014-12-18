@@ -54,36 +54,33 @@ class SpiralQueue
   end
 end
 
-queue = SpiralQueue.new(side)
-queue.each do |n, y, x|
-  numbers[y][x] = n
-end
+SpiralQueue.new(side).each { |n, y, x| numbers[y][x] = n }
 
 COLORS = {
   true  => "\e[0;40m  ",
   false => "\e[30;47m  ",
-  0     => "\e[41m  ",
-  1     => "\e[42m  ",
-  2     => "\e[43m  ",
-  3     => "\e[44m  ",
-  4     => "\e[45m  ",
-  5     => "\e[46m  ",
-  6     => "\e[47m  ",
+  0     => "\e[40m  ",
+  1     => "\e[41m  ",
+  2     => "\e[42m  ",
+  3     => "\e[43m  ",
+  4     => "\e[44m  ",
+  5     => "\e[45m  ",
+  6     => "\e[46m  ",
+  7     => "\e[47m  ",
 }
 
 def print_grid(grid, colors=COLORS, &check)
-  grid.each do |row|
-    row.each do |num|
-      print colors[check[num]]
-    end
-    print "\e[0m\n"
-  end
+  print grid.map { |row|
+    row.map { |num| colors[check[num]] }.join("") << "\e[0m"
+  }.join("\n")
 end
 
 puts "primes (Ulam spiral)"
 require 'prime'
 print_grid numbers, &Prime.method(:prime?)
 puts
+
+# -----------------------------------------------------------------------------
 
 puts 'primes with girth (Ulam spiral)'
 grayscale = Array.new(24) { |i| "\e[48;5;#{16 + 216 + i}m  " }
@@ -107,11 +104,13 @@ numbers.each_with_index do |row, y|
 end
 puts
 
+# -----------------------------------------------------------------------------
 
 puts "evens"
 print_grid numbers, &:even?
 puts
 
+# -----------------------------------------------------------------------------
 
 puts "fibonacci"
 def is_fib?(n)
@@ -122,11 +121,13 @@ end
 print_grid numbers, &method(:is_fib?)
 puts
 
+# -----------------------------------------------------------------------------
 
 puts "mod 3"
 print_grid(numbers) { |n| n % 3 }
 puts
 
+# -----------------------------------------------------------------------------
 
 puts "totient % 216 (that's all the colours I have: 6red*6blue*6green)"
 def totient(n)
@@ -138,10 +139,55 @@ print_grid numbers, colours do |n|
 end
 puts
 
+# -----------------------------------------------------------------------------
 
 puts "totient % 24 (that's all shades of gray that I have)"
 colours = Array.new(24) { |i| "\e[48;5;#{16 + 216 + i}m  " }
 print_grid numbers, colours do |n|
   totient(n) % 24
+end
+puts
+
+# -----------------------------------------------------------------------------
+
+puts 'composite multiples coloured the same'
+num_string = <<NUMS
+ 0000  | 1 | 2222  | 3333  | 4  4  | 55555 |  666  | 7777 |  888  |  999
+0    0 | 1 |     2 |     3 | 4  4  | 5     | 6     |    7 | 8   8 | 9   9
+0    0 | 1 |  222  | 3333  | 44444 | 5555  | 6666  |   7  |  888  |  9999
+0    0 | 1 | 2     |     3 |    4  |     5 | 6   6 |  7   | 8   8 |     9
+ 0000  | 1 | 22222 | 3333  |    4  | 5555  |  666  |  7   |  888  |  999
+NUMS
+line_size    = num_string.lines.map(&:chomp).map(&:size).max
+number_lines = num_string.lines.map { |line| line.chomp.ljust(line_size, ' ').split ' | ' }.transpose
+show_num = lambda { |n|
+  n.to_s
+   .chars.map(&:to_i)
+   .map { |digit| number_lines[digit] }
+   .transpose
+   .map { |lines_from_nums| lines_from_nums.join(' ') }
+   .join("\n")
+   .gsub(/[^ \n]+/) { |m| "\e[48;5;52m#{'!!'*m.size}\e[0m" } # marked
+   .gsub(/ +/) { |m| "\e[47m#{'  '*m.size}" }                # unmarked
+   .gsub(/!/, ' ')                                           # no text on marked ones
+}
+begin
+  print "\e[?25l" # hide cursor
+  1.upto side**2 do |base|
+    print_grid numbers do |n|
+      if (n%base).zero?
+        0
+      elsif n.prime?
+        7
+      else
+        7
+      end
+    end
+    print "\e[H", show_num[base] # print number at topleft
+    sleep 1
+    print "\e[H" # go to topleft
+  end
+ensure
+  print "\e[?25h" # show cursor
 end
 puts
