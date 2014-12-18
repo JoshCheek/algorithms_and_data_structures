@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+require 'io/console'
+height, width = $stdout.winsize.min
+
+side = height
+side -= 1 if side.even?
+
+max = side**2
+direction = 1
+numbers = Array.new(side) { Array.new(side) }
+
+class SpiralQueue
+  def initialize(n)
+    @max = n * n
+    @current = 1
+    @y = @x = n / 2
+    @direction = :right
+    @num_direction = 1
+    @queue = [1, 2]
+  end
+
+  def each
+    while @current <= @max
+      yield @current, @y, @x
+      update
+    end
+  end
+
+  private
+
+  def update
+    @current += 1
+
+    case @direction
+    when :right then @x += 1
+    when :up    then @y -= 1
+    when :left  then @x -= 1
+    when :down  then @y += 1
+    end
+
+    @num_direction -= 1
+    return unless @num_direction == 0
+
+    case @direction
+    when :right then @direction = :up
+    when :up    then @direction = :left
+    when :left  then @direction = :down
+    when :down  then @direction = :right
+    end
+    @queue << (@queue[0] == @queue[1] ?
+                 @queue[1].next :
+                 @queue[1])
+    @num_direction = @queue.shift
+  end
+end
+
+queue = SpiralQueue.new(side)
+queue.each do |n, y, x|
+  numbers[y][x] = n
+end
+
+COLORS = {
+  true  => "\e[0;40m  ",
+  false => "\e[30;47m  ",
+  0     => "\e[41m  ",
+  1     => "\e[42m  ",
+  2     => "\e[43m  ",
+  3     => "\e[44m  ",
+  4     => "\e[45m  ",
+  5     => "\e[46m  ",
+  6     => "\e[47m  ",
+}
+
+def print_grid(grid, colors=COLORS, &check)
+  grid.each do |row|
+    row.each do |num|
+      print colors[check[num]]
+    end
+    print "\e[0m\n"
+  end
+end
+
+puts "primes (Ulam spiral)"
+require 'prime'
+print_grid numbers, &Prime.method(:prime?)
+puts
+
+
+puts "evens"
+print_grid numbers, &:even?
+puts
+
+
+puts "fibonacci"
+def is_fib?(n)
+  @fibs ||= [0, 1, 1]
+  @fibs << (@fibs[-1] + @fibs[-2]) until n < @fibs.last
+  @fibs.include? n
+end
+print_grid numbers, &method(:is_fib?)
+puts
+
+
+puts "mod 3"
+print_grid(numbers) { |n| n % 3 }
+puts
+
+
+puts "totient % 216 (that's all the colours I have: 6red*6blue*6green)"
+def totient(n)
+  (1...n).count { |divisor| n.gcd(divisor) == 1 }
+end
+colours = Array.new(216) { |i| "\e[48;5;#{16 + i}m  " }
+print_grid numbers, colours do |n|
+  totient(n) % 216
+end
+puts
+
+
+puts "totient % 24 (that's all shades of gray that I have)"
+colours = Array.new(24) { |i| "\e[48;5;#{16 + 216 + i}m  " }
+print_grid numbers, colours do |n|
+  totient(n) % 24
+end
+puts
