@@ -14,7 +14,7 @@ Future
 
 A list of things that might be fun to work on.
 
-* Turing has some! https://github.com/turingschool/data_structures_and_algorithms
+* Turing has some! https://github.com/turingschool/data_structures_and_algorithms (a\*, binary trees, linked lists, luhn algorithm, md5, and pathfinding)
 * Clean up the "Run Based Merge Sort" b/c it's pretty nasty
 * Implement the sorts in-place so that they use the existing arrays instead of requiring additional memory
 * Public / private key https://www.youtube.com/watch?v=6NcDVERzMGw&spfreload=10
