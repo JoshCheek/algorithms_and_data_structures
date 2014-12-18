@@ -85,6 +85,28 @@ require 'prime'
 print_grid numbers, &Prime.method(:prime?)
 puts
 
+puts 'primes with girth (Ulam spiral)'
+grayscale = Array.new(24) { |i| "\e[48;5;#{16 + 216 + i}m  " }
+def block_at(grid, y, x)
+  [[y-1, x-1], [y-1, x], [y-1, x+1],
+   [y  , x-1], [y  , x], [y  , x+1],
+   [y+1, x-1], [y+1, x], [y+1, x+1],
+  ].map { |newy, newx| (grid[newy]||[])[newx] }
+   .compact
+end
+numbers.each_with_index do |row, y|
+  row.each_with_index do |n, x|
+    if Prime.prime? n
+      girth = block_at(numbers, y, x).count(&Prime.method(:prime?))
+      print grayscale[23-(girth*4)]
+    else
+      print grayscale[23]
+    end
+  end
+  print "\e[0m\n"
+end
+puts
+
 
 puts "evens"
 print_grid numbers, &:even?
